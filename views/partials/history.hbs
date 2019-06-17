@@ -1,0 +1,115 @@
+<div id="history-wrapper" class="all-frames hide-me">
+
+    <div class="h-full w-full  flex justify-center flex-col ">
+        {{!-- <div class="relative">
+            <span id="history-off-chain-amount" class="block px-8 pt-8 text-center tracking-wide text-xs">
+                    CREDIT — 15 AE
+            </span>
+            <a href="#" class="no-underline text-pink-darkest text-2xl absolute pin-r pin-t py-6 px-8">
+                    ⁞
+            </a>
+        </div>
+        <div class="flex-1 ">
+            
+        </div>
+        <div class="bg-pink-darkest  ">
+            <a href="#" class="no-underline text-teal-lightest block p-8 text-center tracking-wide text-xs">
+                    ORDER A FREE COFFEE!
+            </a>
+
+        </div> --}}
+
+    </div>
+
+    <div class="absolute pin flex justify-center">
+        <div class="m-6 w-full bg-white shadow-lg flex justify-center flex-col">
+                   <div class="relative flex ">
+                        <a id="btn-credits" href="#" class="change-frame no-underline text-pink-darkest-50 block flex-1 px-8 pt-8 text-center tracking-wide text-xs border-b border-pink-darkest-25 ">
+                                CREDIT
+                        </a>
+                        <a href="#" class="no-underline text-pink-darkest block flex-1 px-8 pt-8 text-center tracking-wide text-xs border-b-2 border-pink-darkest font-bold">
+                                        HISTORY  
+                        </a>
+                                        
+                        <a href="#" id="btn-buy" class="change-frame no-underline text-white bg-pink-darkest text-2xl  py-6 px-6">
+                                ✗
+                        </a>
+                   </div>
+                    <div id="history-container" class="flex-1 flex flex-col overflow-y-auto">
+                            
+                        {{!-- history logs --}}
+
+                    </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+	
+    window.addEventListener('load', async function () {
+
+        async function updateOffChainBalance () {
+            let balance = await getOffChainBalance();
+            let toAe = balance / ONE_AE;
+            $('#history-off-chain-amount').text(`CREDIT - ${toAe} AE`);
+        }
+
+        function showHistory() {
+            let logs = getHistory();
+
+            function sortByDate(a, b) {
+               return b.date - a.date;
+            }
+
+            logs.sort(sortByDate);
+
+            let historyContainer = $('#history-container');
+            historyContainer.empty();
+
+            for (let historyData of logs) {
+
+
+                let timespan = parseInt((Date.now() - historyData.date) / 1000);
+
+                let timespanInfo = '';
+                if(timespan < 60){
+                    timespanInfo = `${timespan} sec ago`;
+                } else if (timespan / 60 < 60) {
+                    timespanInfo = `${parseInt(timespan / 60)} min ago`;
+                } else {
+                    timespanInfo = `${parseInt(timespan / 60 / 60)} hours ago`;
+                }
+
+                let amount = (historyData.amount / ONE_AE).toString();
+                
+                let element;
+
+                if (amount === '0') {
+                    element = $(`<div class="mx-5  flex justify-between flex-no-shrink border-t border-pink-darkest-25">      
+                            <div class="text-xs font-sans tracking-wide py-8"> 
+                                    ${historyData.quantity} ${historyData.name}
+                                    <span class="tracking-normal opacity-50"> ${timespanInfo}</span>
+                            </div>         
+                            <div class="text-xs font-sans tracking-wide py-8 text-teal">FREE</div>
+                    </div>`);	
+                } else {
+                    element = $(`<div class="mx-5  flex justify-between flex-no-shrink border-t border-pink-darkest-25">      
+                            <div class="text-xs font-sans tracking-wide py-8"> 
+                                    ${historyData.quantity} ${historyData.name}
+                                    <span class="tracking-normal opacity-50"> ${timespanInfo}</span>
+                            </div>         
+                            <div class="text-xs font-sans tracking-wide py-8">+ ${amount} AE</div>
+                    </div>`);
+                }
+                
+                historyContainer.append(element);
+            }
+        }
+
+        helper.setOnFrameChangeFuncs(frames.HISTORY, showHistory);
+    })
+
+</script>

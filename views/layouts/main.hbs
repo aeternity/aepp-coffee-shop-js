@@ -1,0 +1,545 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>State Channel Demo</title> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous">
+    </script>
+
+    <script src="/scripts/main.js"></script>
+
+    <link rel="stylesheet" href="/styles/sample-loader.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/0.7.4/tailwind.min.css">
+    <style>
+            .w-96{
+                width: 24rem;
+            }
+            .h-160{
+                height: 40rem;
+            }
+            .hide-me {
+                display: none;
+            }
+
+            .btn {
+                border: 2px solid black;
+                border-radius: 3px;
+                margin: 10px;
+                padding: 5px;
+                color: red;
+            }
+    </style>
+</head>
+  <body  class="text-pink-darkest bg-teal-lightest relative font-sans">
+
+    {{>home}}
+    {{>loader}}
+    
+    <div id="sc-wrapper">
+        {{>open}}
+        {{>buy}}
+        {{>credits}}
+        {{>history}}
+    </div>
+
+    <script>
+
+        const SHOW_DEBUG_INFO = true;
+
+        function log() {
+            if (SHOW_DEBUG_INFO) {
+                for (let arg in arguments) {
+                    console.log(arguments[arg]);
+                }
+
+                console.log();
+            }
+        }
+        
+        log(aeWeb);
+
+        let initiatorKeyPair = {
+            publicKey: '',
+            secretKey: ''
+        }
+
+        const ONE_AE = 1000000000000000000;
+
+        const url = aeWeb.config.node.API_URL;
+        const internalUrl = aeWeb.config.node.INTERNAL_API_URL; 
+        const networkId = aeWeb.config.node.NETWORK_ID;
+
+        let responderId = aeWeb.config.responderAddress;
+
+        let Crypto = aeWeb.crypto;
+        let Channel = aeWeb.channel;
+        let Universal = aeWeb.universal;
+        let Wallet = aeWeb.wallet;
+        let MemoryAccount = aeWeb.memoryAccount;
+        let TxBuilder = aeWeb.txBuilder;
+
+        let initiatorAddress = initiatorKeyPair.publicKey;
+        let account;
+        let channel;
+
+        let channelReserve;
+
+        let createAccount;
+        let updateState;
+        let getAndUpdateOffChainBalance;
+        let getOffChainBalance;
+        let reDeposit;
+
+        let startStateChannel;
+
+        let scWrapper;
+        let channelStatus;
+        let loadOpenFrame;
+        let isChannelOpen;
+        let changeFrame;
+
+        let isNextCoffeeFreeOldState = false;
+        let isCoffeeFree = false;
+
+        function isNextCoffeeFree() {
+            return isCoffeeFree;
+        };
+
+        let frames = {
+            OPEN: '#open-wrapper',
+            BUY: '#buy-wrapper',
+            CREDITS: '#credits-wrapper',
+            HISTORY: '#history-wrapper',
+            LOADER: '#loader-wrapper'
+        };
+
+
+        class Helper {
+            constructor(){
+                this.updateOffChainBalanceFuncs = {};
+                this.onFrameChange = {};
+            }
+
+            setUpdateOffChainBalance(frameName, func) {
+                this.updateOffChainBalanceFuncs[frameName.toLocaleLowerCase()] = func;
+            }
+
+            runUpdateOffChainBalance(frameName) {
+                if(this.updateOffChainBalanceFuncs[frameName.toLocaleLowerCase()]){
+                    this.updateOffChainBalanceFuncs[frameName.toLocaleLowerCase()]();
+                }
+            }
+
+            setOnFrameChangeFuncs(frameName, func) {
+                if(!this.onFrameChange[frameName]){
+                    this.onFrameChange[frameName] = [];
+                }
+
+                this.onFrameChange[frameName].push(func)
+            }
+
+            runOnFrameChange(frameName) {
+                if(this.onFrameChange[frameName]){
+                    log(`[FRAME] ${ frameName }`);
+
+                    for(let func in this.onFrameChange[frameName]){
+                        this.onFrameChange[frameName][func]();
+                    }
+                }
+            }
+        }
+
+        const helper = new Helper();
+
+        changeFrame = function () {
+            let action = $(this).attr('id').replace('btn-', '').toUpperCase();
+
+            log(`[BTN-ACTION] ${ action }`);
+
+            scWrapper.hide();
+            $(frames[action]).show();
+            helper.runUpdateOffChainBalance(frames[action]);
+            helper.runOnFrameChange(frames[action]);
+        };
+
+        function showLoader(){
+            scWrapper.hide();
+            $(frames.LOADER).show();
+        }
+
+        (async function () {
+
+            account = await aeWeb.aepp();
+            initiatorAddress = await account.address();
+
+            log(`[INFO] initiator Address: ${initiatorAddress}`);
+
+            let result = await $.ajax({
+                    type: "GET",
+                    url: `/faucet?pubKey=${initiatorAddress}`
+            });
+
+            log(`[FAUCET] ${ result.message }`);
+
+            $('.change-frame').click(changeFrame);
+            
+        })();
+
+        (async function () {
+
+            const history = [];
+
+            function clearHistory(){
+                isNextCoffeeFreeOldState = false;
+                isCoffeeFree = false;
+
+                // clear history array
+                while (history.pop());
+            }
+
+            scWrapper = $('.all-frames');
+            window.scWrapper = scWrapper;
+
+            function loadOpenFrame () {
+                scWrapper.hide();
+                $(frames.OPEN).show();
+            }
+
+            function loadBuyFrame () {
+                scWrapper.hide();
+                $(frames.BUY).show();
+                helper.runUpdateOffChainBalance(frames.BUY);
+            }
+
+            function loadCreditFrame() {
+                scWrapper.hide();
+                $(frames.CREDITS).show();
+                helper.runUpdateOffChainBalance(frames.CREDITS);
+            } 
+
+            loadOpenFrame();
+            
+            isChannelOpen = function () {
+                if(channelStatus !== 'open') {
+                    loadOpenFrame();
+
+                    clearHistory();
+
+                    return false;
+                }
+
+                return true;
+            }
+
+            /* Open state channel*/
+            let btnsStartStateChannel = $('.btns-start-sc');
+            btnsStartStateChannel.click(startStateChannel);
+
+            startStateChannel = async function () {
+
+                let depositValue = parseInt($(this).data('amount-value'));
+                depositAmount = depositValue * ONE_AE;
+                
+                showLoader();
+
+                if (!depositAmount || depositAmount < 1) {
+                    alert('Invalid deposit amount!');
+                    return;
+                }
+
+                $('.start-wrapper').hide();
+
+                let params = await getParams();
+
+                if (depositAmount < params.responderAmount) {
+                    alert(`Deposit should be equal or greater than ${params.responderAmount}!`);
+                    $('.start-wrapper').show();    
+                    hideLoader();
+                    return;
+                }
+
+                params.responderAmount = parseInt(depositAmount);
+                params.initiatorAmount = parseInt(depositAmount);
+                params.initiatorId = initiatorAddress;
+
+                channelReserve = parseInt(params.channelReserve);
+
+
+                channel = await connectAsInitiator(params, sign);
+                channelActions(channel);
+
+                responderId = params.responderId;
+
+                let data = {
+                    params: params
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '/channel',
+                    data: data,
+                    success: function (response) {
+                        log(`[RESULT] channel creation response: ${ response }`);
+                    }
+                });
+            }
+
+            async function connectAsInitiator(params, sign) {
+
+                const TIMEOUT = 1000 * 60 * 20;
+
+                const _params = {
+                    ...params,
+                    url: aeWeb.config.node.STATE_CHANNEL_URL,
+                    role: 'initiator',
+                    sign: sign,
+                    //timeout_accept : TIMEOUT,
+                    //timeout_funding_lock : TIMEOUT,
+                    //timeout_awaiting_locked : TIMEOUT,
+                    //timer_funding_lock: TIMEOUT,
+                    //timeout_idle: TIMEOUT,
+                    //timeout_funding_create: TIMEOUT,
+                    //timeout_sign: TIMEOUT,
+                    
+                    //timeout_awaiting_open: TIMEOUT,
+                    //timeout_idle: TIMEOUT,
+                    minimum_depth: 0
+                }
+
+                log('[PARAMS]', _params);
+
+                return await Channel(_params);
+            }
+
+            async function sign(tag, tx) {
+                // Deserialize binary transaction so we can inspect it
+                const txData = deserializeTx(tx);
+                
+                if (txData.tag === 'CHANNEL_CREATE_TX') {
+                log(`[SIGN] CHANNEL_CREATE_TX:`, txData);
+                    
+                    return account.signTransaction(tx);
+                }
+
+                if (tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX') {
+                    
+                    log(`[SIGN] CHANNEL_OFFCHAIN_TX: ${ txData }`);
+                    
+                    return account.signTransaction(tx);
+                }
+
+                if (tag === 'shutdown_sign_ack' || txData.tag === 'CHANNEL_CLOSE_MUTUAL_TX') {
+                    log(`[SIGN] CHANNEL_CLOSE_MUTUAL_TX: ${ txData }`);
+                    
+                    return account.signTransaction(tx);
+                }
+
+                console.log('[ERROR] Not a suitable case to sign a TX', txData);
+            }
+
+            async function channelActions(channel) {
+
+                channel.on('statusChanged', (status) => {
+                    channelStatus = status;
+                    log(`[STATUS] ${status.toUpperCase()}`);
+
+                    if(status.toUpperCase() === 'DISCONNECTED') {
+                        loadOpenFrame();
+                    }
+                });
+
+                channel.on('onChainTx', (tx) => {
+                    log(`[ON-CHAIN-TX]: ${ tx }`);
+                })
+
+                channel.on('message', async (msg) => {
+
+                    log(`[MESSAGE]:`, msg);
+
+                    let info = JSON.parse(msg.info);
+
+                    if (msg.info.indexOf('successfully created') >= 0) {
+                        loadBuyFrame();
+
+                        //showSeconds(180);
+                        function showSeconds (maxSeconds) {
+                            let currentSecond = 1;
+                            let interval = setInterval(function () {
+                                console.log(currentSecond++);
+                                if(currentSecond >= maxSeconds) {
+                                    clearInterval(interval);
+                                }
+                            }, 1000);
+                        }
+                        
+                    }
+
+                    if(msg.info.indexOf('[OFF_CHAIN]') >= 0) {
+
+                        let historyData = {
+                            quantity: 1,
+                            name: info.name,
+                            amount: info.amount,
+                            date: Date.now()
+                        };
+
+                        let oldState = isNextCoffeeFreeOldState;
+                        isCoffeeFree = info.isNextFree;
+
+                        if (isNextCoffeeFree || oldState){
+                            // maybe more correct would be onEvent || or throw events and event listener to execute proper function
+                            helper.runOnFrameChange(frames.BUY);
+                        }
+
+                        history.push(historyData);
+                    }
+                });
+            }
+
+            getAndUpdateOffChainBalance = async function () {
+                let balance = await getOffChainBalance();
+                updateOffChainBalance(balance);
+            }
+            
+            getOffChainBalance = async function () {
+                // off chain balances
+                let balances = await channel.balances([ initiatorAddress ]);
+                let offChainBalance = balances[ initiatorAddress ];
+
+                return offChainBalance;
+            }
+
+            updateState = async function (channel, senderAddress, recipientAddress, amount) {
+
+                log(`[DEBUG] sender: ${senderAddress}, recipient: ${recipientAddress}, amount: ${amount}`);
+
+                try {
+                    let result = await channel.update(
+                        // Sender account
+                        senderAddress,
+                        // Recipient account
+                        recipientAddress,
+                        // Amount
+                        parseInt(amount),
+                        // This function should verify offchain transaction
+                        // and sign it with initiator's private key
+                        async (tx) => await account.signTransaction(tx)
+                    );
+                } catch (e) {
+                    alert('[ERROR] UPDATE: Something went wrong! Invalid Tx!');
+                    console.log(e);
+                }
+            }
+
+            reDeposit = async function (amount) {
+
+                log(`[DEBUG] try to redeposit with: ${ amount }`);
+                
+                showLoader();
+                
+                let result;
+                try {
+                    result = await channel.deposit(parseInt(amount), async (tx) => await account.signTransaction(tx));
+                } catch (e) {
+                    log(e);
+                }
+                
+                loadCreditFrame()
+
+                if(result.accepted){
+                    let historyData = {
+                        quantity: 1,
+                        name: 'CREDIT',
+                        amount: amount,
+                        date:Date.now()
+                    };
+
+                    history.push(historyData);
+                }
+
+                log(`[RESULT] credit:`, result);
+            }
+
+            /* Shutdown state channel*/
+            closeChannel = async function () {
+
+                if(!isChannelOpen()) {
+                    console.log('[ERROR] State Channel is DISCONNECTED!');
+                    return;
+                }
+
+                try {
+                    
+                    let shutDownResult = await channel.shutdown(async (tx) => {
+                        clearHistory();
+                        return account.signTransaction(tx);
+                    });
+
+                    log(`[RESULT] shutdown: ${ shutDownResult }`);
+                } catch (e) {
+                    console.log('[ERROR] Error occurred while closing the channel.')
+                    console.log(e);
+                }
+
+                let data = {
+                    initiatorAddress: initiatorAddress
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '/stop',
+                    data: data,
+                    success: function (response) {
+                        log(`[INFO] state channel successfully closed: ${ response }`)
+                    },
+                    error: function (response) {
+                        console.log('[ERROR] stop:', response)
+                    }
+                });
+            }
+
+            credit = async function () {
+
+                if(!isChannelOpen()){
+                    return;
+                }
+
+                let amountToRedeposit = $(this).data('credit');
+                
+                if (isNaN(amountToRedeposit) || amountToRedeposit <= 0) {
+                    alert("Redeposit should be a number and greater than 0(zero).");
+                    return;
+                }
+
+                amountToRedeposit = parseInt(amountToRedeposit);
+
+                await reDeposit(amountToRedeposit * ONE_AE);
+            }
+
+            getHistory = function () {
+                return history;
+            }
+
+            async function getParams() {
+                let result = await $.ajax({
+                    type: "GET",
+                    url: '/config/params'
+                });
+                
+                return result;
+            }
+
+            function deserializeTx(tx) {
+                const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true });
+
+                return txData;
+            }
+
+        })();
+    </script>
+
+</body>
+</html>

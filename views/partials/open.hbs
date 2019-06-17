@@ -1,0 +1,71 @@
+<div id="open-wrapper" class="all-frames hide-me">
+
+    <div class="h-full w-full  flex justify-center flex-col ">
+        {{!-- <div class="relative">
+            <span class="block px-8 pt-8 text-center tracking-wide text-xs">
+                CREDIT — 15 AE
+            </span>
+            <a href="#" class="no-underline text-pink-darkest text-2xl absolute pin-r pin-t py-6 px-8">
+                ⁞
+            </a>
+        </div>
+        <div class="flex-1 ">
+
+        </div>
+        <div class="bg-pink-darkest  ">
+            <a href="#" class="no-underline text-teal-lightest block p-8 text-center tracking-wide text-xs">
+                ORDER A FREE COFFEE!
+            </a>
+
+        </div> --}}
+
+    </div>
+
+    <div class="absolute pin flex justify-center">
+        <div class="m-6 w-full bg-white shadow-lg flex justify-center flex-col">
+            <div class="relative flex  justify-end">
+
+                <a href="#" class="no-underline text-white bg-pink-darkest text-2xl  py-6 px-6">
+                    ✗
+                </a>
+            </div>
+            <div class="flex-1 flex flex-col justify-end">
+                <div class="flex-1 flex flex-col justify-center text-center ">
+
+                    <div class="font-serif   text-5xl font-normal leading-none px-6 pb-8">
+                        Please open a
+                        state channel
+                        in order to get
+                        a coffee.
+                    </div>
+
+                </div>
+
+                <a href="#" data-amount-value="2"
+                    class="btns-start-sc mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    DEPOSIT — 2 AE
+                </a>
+                <a href="#" data-amount-value="5"
+                    class="btns-start-sc mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    DEPOSIT — 5 AE
+                </a>
+                <a href="#" data-amount-value="10"
+                    class="btns-start-sc mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    DEPOSIT — 10 AE
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+        
+    window.addEventListener('load', async function () {
+        let btnsStartStateChannel = $('.btns-start-sc');
+        btnsStartStateChannel.click(startStateChannel);
+    })
+</script>

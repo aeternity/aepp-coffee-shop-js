@@ -1,0 +1,74 @@
+<div id="credits-wrapper" class="all-frames hide-me">
+
+    <div class="h-full w-full  flex justify-center flex-col ">
+
+    </div>
+
+    <div class="absolute pin flex justify-center">
+        <div class="m-6 w-full bg-white shadow-lg flex justify-center flex-col">
+            <div class="relative flex ">
+                <a href="#"
+                    class="no-underline text-pink-darkest block flex-1 px-8 pt-8 text-center tracking-wide text-xs border-b-2 border-pink-darkest font-bold">
+                    CREDIT
+                </a>
+                <a id="btn-history" href="#"
+                    class="change-frame no-underline text-pink-darkest-50 block flex-1 px-8 pt-8 text-center tracking-wide text-xs border-b border-pink-darkest-25 ">
+                    HISTORY
+                </a>
+                <a href="#" id="btn-buy"
+                    class="change-frame no-underline text-white bg-pink-darkest text-2xl  py-6 px-6">
+                    ✗
+                </a>
+            </div>
+            <div class="flex-1 flex flex-col justify-end">
+                <div class="flex-1 flex flex-col justify-center text-center ">
+                    <div>
+                        <span id="credit-off-chain-amount" class="font-serif  text-6xl font-normal leading-none"></span>
+                        <span class="text-xs font-sans tracking-wide"> AE</span>
+                    </div>
+                </div>
+
+                <a href="#" data-credit="1"
+                    class="btns-credit mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    DEPOSIT — 1 AE
+                </a>
+                <a href="#" data-credit="2"
+                    class="btns-credit mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    DEPOSIT — 2 AE
+                </a>
+                <a href="#" data-credit="5"
+                    class="btns-credit mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    DEPOSIT — 5 AE
+                </a>
+                <a id="btn-credit--close-channel" href="#"
+                    class="mx-5 no-underline text-pink-darkest block py-8 text-center tracking-wide text-xs border-t border-pink-darkest-25">
+                    CLOSE CHANNEL
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    
+    window.addEventListener('load', async function() {
+
+        isChannelOpen();
+
+        async function updateOffChainBalance () {
+            let balance = await getOffChainBalance();
+            let toAe = balance / ONE_AE;
+            
+            $('#credit-off-chain-amount').text(` ${toAe}`);
+        }
+
+        helper.setUpdateOffChainBalance(frames.CREDITS, updateOffChainBalance);
+
+        $('#btn-credit--close-channel').click(closeChannel);
+        $('.btns-credit').click(credit);
+    });
+
+</script>

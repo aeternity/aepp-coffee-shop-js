@@ -1,0 +1,105 @@
+<div id="buy-wrapper" class="all-frames hide-me">
+
+    <div class="h-full w-full  flex justify-center flex-col">
+        <div class="relative">
+            <span id="buy-off-chain-amount" class="block px-8 pt-8 text-center tracking-wide text-xs">
+                    CREDIT — 15 AE 
+            </span>
+            <a id="btn-credits" href="#" class="no-underline text-pink-darkest text-2xl absolute pin-r pin-t py-6 px-8">
+                    ⁞
+            </a>
+        </div>
+        <div class="flex-1 flex flex-col justify-center">
+            <div class="flex flex-1 flex-col justify-end ">
+                <h1 class="font-serif text-center pb-4 px-8 text-5xl font-normal leading-none">
+                    How about an 
+                    Espresso?
+                </h1>
+            </div>
+            <div class="relative flex-2 ">
+
+                <div id="free-coffee" class="hide-me absolute bg-teal pin-t pin-r w-32 h-32 -mt-6 mr-4 rounded-full">
+                    <div class="absolute pin m-1 border border-teal-lightest rounded-full flex flex-col justify-center">
+                            <span class="text-center   text-teal-lightest text-2xl font-condensed tracking">
+                                    YOUR <br>
+                                    NEXT COFFEE <br>
+                                    IS FREE!
+                            </span>
+                    </div>
+                </div>
+
+                <div class=" absolute w-full h-full bg-cover bg-center bg-no-repeat" style="background-image: url(assets/img/espresso.png);">
+                </div>
+
+            </div>
+        </div>
+        <div class="bg-pink-darkest  ">
+            <a href="#" id="btn-coffee" data-product-name="espresso" class="no-underline text-teal-lightest block p-8 text-center tracking-wide text-xs">
+                    ORDER AND PAY — 0.5 AE
+            </a>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let buyProduct;
+
+    window.addEventListener('load', async function () {
+
+        isChannelOpen();
+
+        function showFreeCoffee(){
+            if (isNextCoffeeFree()) {
+                $('#free-coffee').show();
+                $('#btn-coffee').text('ORDER A FREE COFFEE!');
+            } else {
+                $('#free-coffee').hide();
+                $('#btn-coffee').text('ORDER AND PAY — 0.5 AE');
+            }
+        }
+
+        helper.setOnFrameChangeFuncs(frames.BUY, showFreeCoffee);
+
+        async function updateOffChainBalance () {
+            let balance = await getOffChainBalance();
+            let toAe = balance / ONE_AE;
+            $('#buy-off-chain-amount').text(`CREDIT - ${toAe} AE`);
+        }
+
+        helper.setUpdateOffChainBalance(frames.BUY, updateOffChainBalance);
+
+        buyProduct = async function () {
+            
+            isChannelOpen();
+
+            let productName = $(this).data('product-name');
+            let data = {
+                productName: productName,
+                initiatorAddress: initiatorAddress
+            }
+            
+            let result = await $.ajax({
+                type: "POST",
+                url: '/buy',
+                data: data
+            });
+
+            if (SHOW_DEBUG_INFO) {
+                console.log('[RESULT] get price:', result);
+                console.log();
+            }
+
+            await updateState(channel, initiatorAddress, responderId, result.price);
+            
+            setTimeout(async () => {
+                await updateOffChainBalance();
+            }, 2000);
+        }
+        
+        $('#btn-coffee').click(buyProduct);
+        $('#btn-credits').click(changeFrame);
+
+    });
+</script>
