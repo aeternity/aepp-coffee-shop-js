@@ -1,5 +1,4 @@
-# ae-state-channels-demo
-COFFEE SHOP STATE CHANNEL DEMO
+# COFFEE SHOP STATE CHANNEL DEMO
 
 То run this demo you should run or connect to AE node and local compiler
 ```forgae node``` 
