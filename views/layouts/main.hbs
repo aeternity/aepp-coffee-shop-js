@@ -267,8 +267,13 @@
 
                 channelReserve = parseInt(params.channelReserve);
 
+                try {
+                    channel = await connectAsInitiator(params, sign);
+                } catch(e) {
+                    console.log('[ERROR]', e);
+                    return;
+                }
 
-                channel = await connectAsInitiator(params, sign);
                 channelActions(channel);
 
                 responderId = params.responderId;

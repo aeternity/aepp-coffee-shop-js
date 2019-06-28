@@ -26,7 +26,7 @@ const SHOW_DEBUG_INFO = true;
 function log() {
     if (SHOW_DEBUG_INFO) {
         for (let arg in arguments) {
-            console.log(JSON.stringify(arguments[arg], null, 2));
+            console.log(`${new Date()}|${JSON.stringify(arguments[arg], null, 2)}`);
         }
 
         console.log();
@@ -46,8 +46,8 @@ let createAccount = async function (keyPair) {
             publicKey: keyPair.publicKey,
             secretKey: keyPair.secretKey
         },
-        // compilerUrl: 'https://compiler.aepps.com',
-        compilerURL: 'http://localhost:3080'
+        compilerUrl: 'https://compiler.aepps.com',
+        // compilerURL: 'http://localhost:3080'
     })
 
     return tempAccount;
@@ -77,6 +77,7 @@ let account;
 async function createChannel(req, res) {
 
     let params = req.body.params;
+
     let channel = await connectAsResponder(params);
 
     let data = {
@@ -231,29 +232,31 @@ async function connectAsResponder(params) {
         minimum_depth: 0
     };
 
+    log('[PARAMS]', _params);
+
     return await Channel(_params);
 }
 
 async function responderSign(tag, tx) {
-    log('[SIGN] responder');
+    console.log('[SIGN] responder');
 
     if(tag === 'deposit_ack') {
 
-        log(`[deposit_ack]`, tx);
+        // log(`[deposit_ack]`, tx);
         return account.signTransaction(tx)
     }
 
     // Deserialize binary transaction so we can inspect it
     let txData = deserializeTx(tx);
 
-    log(`[TAG] ${ tag }`);
+    // log(`[TAG] ${ tag }`);
 
     tag = txData.tag;
 
-    log(`[TAG] ${ tag }`);
+    // log(`[TAG] ${ tag }`);
 
     if (tag === 'responder_sign' || tag === 'CHANNEL_CREATE_TX') {
-        log(txData);
+        // log(txData);
         return account.signTransaction(tx)
     }
 
@@ -264,12 +267,12 @@ async function responderSign(tag, tx) {
     if (tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX' || tag === 'CHANNEL_OFFCHAIN_UPDATE_TRANSFER') {
 
 
-        log(txData);
+        // log(txData);
 
         let isValid = isTxValid(txData);
         if (!isValid) {
             // TODO: challenge/dispute
-            log('[ERROR] transaction is not valid');
+            // log('[ERROR] transaction is not valid');
         }
 
 
@@ -283,26 +286,26 @@ async function responderSign(tag, tx) {
     }
 
     if (tag === 'shutdown_sign_ack' || tag === 'CHANNEL_CLOSE_MUTUAL_TX') { // && txData.tag === 'CHANNEL_CLOSE_MUTUAL_TX'
-        log('[txData]', '[WARNING] ...maybe this data is INCORRECT, shows some strange responder amount....', txData);
+        // log('[txData]', '[WARNING] ...maybe this data is INCORRECT, shows some strange responder amount....', txData);
 
         return account.signTransaction(tx);
     }
 
 
-    log('[ERROR] ==> THERE IS NO SUITABLE CASE TO SIGN', txData);
+    console.log('[ERROR] ==> THERE IS NO SUITABLE CASE TO SIGN', txData);
 }
 
 function isTxValid(txData) {
     let lastUpdateIndex = txData.updates.length - 1;
     if (lastUpdateIndex < 0) {
-        log('[TX_VALIDATION] ==> last index is smaller than 0')
+        console.log('[TX_VALIDATION] ==> last index is smaller than 0')
         return false;
     }
 
     let lastUpdate = txData.updates[lastUpdateIndex];
     let data = openChannels.get(lastUpdate.from);
     if (!data) {
-        log('[TX_VALIDATION] ==> no data <==')
+        console.log('[TX_VALIDATION] ==> no data <==')
         return false;
     }
 
@@ -311,11 +314,11 @@ function isTxValid(txData) {
     let isValid = isRoundValid && isPriceValid;
 
     if(!isRoundValid) {
-        log('[TX_VALIDATION] ==> invalid round <==');
+        console.log('[TX_VALIDATION] ==> invalid round <==');
     }
 
     if (!isPriceValid) {
-        log('[TX_VALIDATION] ==> invalid price <==');
+        console.log('[TX_VALIDATION] ==> invalid price <==');
     }
 
     if (isValid) {

@@ -4,7 +4,7 @@ const app = express();
 const router = require('./router');
 
 
-const PORT = 4000;
+const PORT = 3000;
 
 const bodyParser = require('body-parser');
 // var multer = require('multer'); // v1.0.5
@@ -17,6 +17,7 @@ const cors = require('cors');
 app.use(cors());
 
 app.use(express.static('public'));
+
 app.use(express.static('dist'));
 
 

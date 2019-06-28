@@ -4,7 +4,7 @@
   "description": "This is the default package.json generated for your project",
   "private": true,
   "scripts": {
-    "start": "node index.js",
+    "start": "node app.js",
     "build": "webpack",
     "watch": "watchify a.js -o dist/bundle.js -v",
     "test": "echo \"Error: no test specified\" && exit 1"
