@@ -428,7 +428,7 @@
                         // Recipient account
                         recipientAddress,
                         // Amount
-                        parseInt(amount),
+                        999, // Number(amount), //parseInt(amount),
                         // This function should verify offchain transaction
                         // and sign it with initiator's private key
                         async (tx) => await account.signTransaction(tx)
@@ -447,25 +447,28 @@
                 
                 let result;
                 try {
-                    result = await channel.deposit(parseInt(amount), async (tx) => await account.signTransaction(tx));
+                    result = await channel.deposit(
+                        Number(amount), 
+                        async (tx) => await account.signTransaction(tx),
+                        { onOnChainTx: (tx) => console.log('[NEW] on_chain_tx', tx) });
+
+                    loadCreditFrame()
+
+                    if(result.accepted){
+                        let historyData = {
+                            quantity: 1,
+                            name: 'CREDIT',
+                            amount: amount,
+                            date:Date.now()
+                        };
+
+                        history.push(historyData);
+                    }
+
+                    log(`[RESULT] credit:`, result);
                 } catch (e) {
                     log(e);
                 }
-                
-                loadCreditFrame()
-
-                if(result.accepted){
-                    let historyData = {
-                        quantity: 1,
-                        name: 'CREDIT',
-                        amount: amount,
-                        date:Date.now()
-                    };
-
-                    history.push(historyData);
-                }
-
-                log(`[RESULT] credit:`, result);
             }
 
             /* Shutdown state channel*/

@@ -5,7 +5,7 @@ const nodeConfig = require('./nodeConfig');
 const ONE_AE = 1000000000000000000;
              
 const MINIMUM_DEPOSIT = ONE_AE;
-const channelReserve =  MINIMUM_DEPOSIT / 10;
+const channelReserve =  MINIMUM_DEPOSIT ; //  / 10;
 
 
 module.exports = {
@@ -25,7 +25,7 @@ module.exports = {
         // Minimum amount both peers need to maintain
         channelReserve: channelReserve,
         // Minimum block height to include the channel_create_tx
-        ttl: 10000,
+        ttl: 0,
         // Amount of blocks for disputing a solo close
         lockPeriod: 10,
         // Host of the responder's node

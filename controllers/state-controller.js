@@ -38,15 +38,20 @@ const FUND_AMOUNT = amounts.deposit * 30;
 let openChannels = new Map();
 
 let createAccount = async function (keyPair) {
+
+    console.log('url:', API_URL);
+    console.log('internalUrl:', INTERNAL_API_URL);
+    console.log('networkId:', NETWORK_ID);
+
     let tempAccount = await Universal({
-        networkId: NETWORK_ID,
         url: API_URL,
         internalUrl: INTERNAL_API_URL,
+        networkId: NETWORK_ID,
         keypair: {
             publicKey: keyPair.publicKey,
             secretKey: keyPair.secretKey
         },
-        compilerUrl: 'https://compiler.aepps.com',
+        // compilerUrl: 'https://compiler.aepps.com',
         // compilerURL: 'http://localhost:3080'
     })
 
@@ -61,17 +66,22 @@ let account;
 
     log(`'NETWORK_ID: ${ NETWORK_ID }`);
 
+    // const keypair = Crypto.generateKeyPair()
+    // console.log(`Public key: ${keypair.publicKey}`)
+    // console.log(`Secret key: ${keypair.secretKey}`)
+
     account = await createAccount(keyPair);
     
-    // try {
+    try {
+        // console.log(await account.address());
+        // // let aa = await account.spend(FUND_AMOUNT, 'ak_ktCQHTRZj4M9nf68zVGmrNnE4t9ZyTvCkJgfoXkbjRqSrauAB');
+        // let aa = await account.spend(1000, 'ak_ktCQHTRZj4M9nf68zVGmrNnE4t9ZyTvCkJgfoXkbjRqSrauAB');
+        // console.log(aa);
 
-    //     let aa = await account.spend(FUND_AMOUNT, 'ak_2fsZ9H3veZedfaCgX3GZpWvfxx1Z5T4n4dQXVhYKEdu8SwEX6q');
-    //     console.log(aa);
-
-    // } catch (error) {
-    //     console.log('[ERROR]');
-    //     console.log(error);
-    // }
+    } catch (error) {
+        console.log('[ERROR]');
+        console.log(error);
+    }
 })()
 
 async function createChannel(req, res) {
@@ -280,6 +290,7 @@ async function responderSign(tag, tx) {
         // Check if update contains only one offchain transaction
         // and sender is initiator
         if (txData.tag === 'CHANNEL_OFFCHAIN_TX' || true) { //  && isValid
+            
             sendConfirmMsg(txData);
             return account.signTransaction(tx);
         }
