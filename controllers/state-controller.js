@@ -1,5 +1,4 @@
 const {
-    MemoryAccount,
     Channel,
     Crypto,
     Universal,
@@ -10,9 +9,7 @@ const {
     API_URL,
     INTERNAL_API_URL,
     STATE_CHANNEL_URL,
-    NETWORK_ID,
-    RESPONDER_HOST,
-    RESPONDER_PORT
+    NETWORK_ID
 } = require('./../config/nodeConfig');
 
 const amounts = require('./../config/stateChannelConfig').amounts;
@@ -39,10 +36,6 @@ let openChannels = new Map();
 
 let createAccount = async function (keyPair) {
 
-    console.log('url:', API_URL);
-    console.log('internalUrl:', INTERNAL_API_URL);
-    console.log('networkId:', NETWORK_ID);
-
     let tempAccount = await Universal({
         url: API_URL,
         internalUrl: INTERNAL_API_URL,
@@ -50,9 +43,7 @@ let createAccount = async function (keyPair) {
         keypair: {
             publicKey: keyPair.publicKey,
             secretKey: keyPair.secretKey
-        },
-        // compilerUrl: 'https://compiler.aepps.com',
-        // compilerURL: 'http://localhost:3080'
+        }
     })
 
     return tempAccount;
@@ -68,9 +59,6 @@ let account;
     
     account = await createAccount(keyPair);
 
-    // const keypair = Crypto.generateKeyPair()
-    // console.log(`Public key: ${keypair.publicKey}`)
-    // console.log(`Secret key: ${keypair.secretKey}`)
 })()
 
 async function createChannel(req, res) {
@@ -108,9 +96,6 @@ async function buyProduct(req, res) {
     let initiatorAddress = req.body.initiatorAddress;
     let productName = req.body.productName;
 
-    console.log(initiatorAddress);
-    // console.log(productName);
-
     let productPrice = products[productName];
     let data = openChannels.get(initiatorAddress);
 
@@ -131,8 +116,6 @@ async function buyProduct(req, res) {
         }
         data.isSigned = false;
         
-
-        //data.channel.sendMessage('update successfully signed', initiatorAddress);
         getOffChainBalances(data.channel);
 
         openChannels[initiatorAddress] = data;
@@ -220,6 +203,8 @@ async function connectAsResponder(params) {
         url: STATE_CHANNEL_URL,
         role: 'responder',
         sign: responderSign,
+        minimum_depth: 0,
+
         // can I add this additional params ???
         // timeout_accept : TIMEOUT,
         // timeout_funding_lock : TIMEOUT,
@@ -231,7 +216,6 @@ async function connectAsResponder(params) {
 
         //timeout_awaiting_open: TIMEOUT,
         // timeout_idle: TIMEOUT,
-        minimum_depth: 0
     };
 
     log('[PARAMS]', _params);
@@ -240,10 +224,7 @@ async function connectAsResponder(params) {
 }
 
 async function responderSign(tag, tx, additionalParam) {
-    console.log('[SIGN] responder');
-
-    console.log('additionalParam');
-    console.log(additionalParam);
+    log('[SIGN] responder');
 
     if(tag === 'deposit_ack') {
 
@@ -253,38 +234,22 @@ async function responderSign(tag, tx, additionalParam) {
 
     // Deserialize binary transaction so we can inspect it
     let txData = deserializeTx(tx);
-    console.log('txData');
-    console.log(txData.txType);
-    // console.log();
-    // console.log(txData);
-    // console.log();
 
-    // let aa = JSON.parse(JSON.stringify(txData.rlpEncoded));
-    // console.log('aaa');
-    // console.log(txData.rlpEncoded.toString('utf8'));
-    // // // console.log(JSON.stringify(txData.rlpEncoded));
-    // console.log();
-
-    // log(`[TAG] ${ tag }`);
-
-    // tag = txData.tag;
     tag = txData.txType;
 
-    // log(`[TAG] ${ tag }`);
+    log(`[TAG] ${ tag }`);
 
     if (tag === 'responder_sign' || tag === 'CHANNEL_CREATE_TX' || tag === 'channelCreate') {
-        // log(txData);
+        log(txData);
         return account.signTransaction(tx)
     }
-
-    
 
     // When someone wants to transfer a tokens we will receive
     // a sign request with `update_ack` tag
     if (tag === 'channelOffChain' || tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX' || tag === 'CHANNEL_OFFCHAIN_UPDATE_TRANSFER') {
 
 
-        // log(txData);
+        log(txData);
 
         let isValid = isTxValid(txData, additionalParam.updates);
         if (!isValid) {
@@ -292,46 +257,38 @@ async function responderSign(tag, tx, additionalParam) {
             // log('[ERROR] transaction is not valid');
         }
 
-
-
         // Check if update contains only one offchain transaction
         // and sender is initiator
         if (txData.tag === 'CHANNEL_OFFCHAIN_TX' || true) { //  && isValid
-            
-            sendConfirmMsg(txData);
+            sendConfirmMsg(txData, additionalParam.updates);
             return account.signTransaction(tx);
         }
     }
 
-    if (tag === 'channelCloseMutual' || tag === 'shutdown_sign_ack' || tag === 'CHANNEL_CLOSE_MUTUAL_TX') { // && txData.tag === 'CHANNEL_CLOSE_MUTUAL_TX'
-        // log('[txData]', '[WARNING] ...maybe this data is INCORRECT, shows some strange responder amount....', txData);
-
+    if (tag === 'channelCloseMutual' || tag === 'shutdown_sign_ack' || tag === 'CHANNEL_CLOSE_MUTUAL_TX') { 
         return account.signTransaction(tx);
     }
-
 
     console.log('[ERROR] ==> THERE IS NO SUITABLE CASE TO SIGN', txData);
 }
 
 function isTxValid(txData, updates) {
 
-    // return true;
-
     if(!updates) {
-        console.log('Missing ');
+        console.log('Missing updates!');
         return false;
     }
 
     let lastUpdateIndex = updates.length - 1;
     if (lastUpdateIndex < 0) {
-        console.log('[TX_VALIDATION] ==> last index is smaller than 0')
+        log('[TX_VALIDATION] ==> last index is smaller than 0')
         return false;
     }
 
     let lastUpdate = updates[lastUpdateIndex];
     let data = openChannels.get(lastUpdate.from);
     if (!data) {
-        console.log('[TX_VALIDATION] ==> no data <==')
+        log('[TX_VALIDATION] ==> no data <==')
         return false;
     }
 
@@ -340,11 +297,11 @@ function isTxValid(txData, updates) {
     let isValid = isRoundValid && isPriceValid;
 
     if(!isRoundValid) {
-        console.log('[TX_VALIDATION] ==> invalid round <==');
+        log('[TX_VALIDATION] ==> invalid round <==');
     }
 
     if (!isPriceValid) {
-        console.log('[TX_VALIDATION] ==> invalid price <==');
+        log('[TX_VALIDATION] ==> invalid price <==');
     }
 
     if (isValid) {
@@ -354,10 +311,9 @@ function isTxValid(txData, updates) {
     return isValid;
 }
 
-function sendConfirmMsg(txData) {
+function sendConfirmMsg(txData, updates) {
 
-    let from = 'ak_mzgKu1D6MSxuwjxi98maG4e6e5XNKZxZEkKbLooRyxvedN85G';//  txData.updates[txData.updates.length - 1].from;
-    // espresso
+    let from = updates[updates.length - 1].from;
     let data = openChannels.get(from);
     let msg = `[OFF_CHAIN] Successfully bought ${data.product.name} for ${data.product.price} aettos.`;
 
@@ -372,12 +328,6 @@ function sendConfirmMsg(txData) {
 }
 
 function deserializeTx(tx) {
-    // const txData = Crypto.deserialize(Crypto.decodeTx(tx), {
-    //     prettyTags: true
-    // });
-
-    // return txData;
-
     return TxBuilder.unpackTx(tx);
 }
 
@@ -385,7 +335,7 @@ function getOffChainBalances(channel) {
     // off chain balances
     channel.balances([ keyPair.publicKey ])
         .then(function (balances) {
-            console.log('[INFO] off chain balance', `[INFO] host: ${ balances[keyPair.publicKey] }`);
+            log('[INFO] off chain balance', `[INFO] host: ${ balances[keyPair.publicKey] }`);
         }).catch(e => console.log(e))
 }
 

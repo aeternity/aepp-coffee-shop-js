@@ -301,6 +301,8 @@
                     url: aeWeb.config.node.STATE_CHANNEL_URL,
                     role: 'initiator',
                     sign: sign,
+                    minimum_depth: 0,
+                    
                     //timeout_accept : TIMEOUT,
                     //timeout_funding_lock : TIMEOUT,
                     //timeout_awaiting_locked : TIMEOUT,
@@ -311,7 +313,6 @@
                     
                     //timeout_awaiting_open: TIMEOUT,
                     //timeout_idle: TIMEOUT,
-                    minimum_depth: 0
                 }
 
                 log('[PARAMS]', _params);

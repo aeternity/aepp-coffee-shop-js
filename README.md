@@ -1,9 +1,6 @@
 # COFFEE SHOP STATE CHANNEL DEMO
 
-То run this demo you should run or connect to AE node and local compiler
-```forgae node``` 
-or 
-```docker-compose up -d --force-recreate``` and ``` docker run -d -p 3080:3080 aeternity/aesophia_http:v3.1.0 ```
+То run this demo you should run or connect to AE node
 
 clone this repo
 ```git clone this_repo```
@@ -14,7 +11,7 @@ install packages
 run the demo
 ```npm start```
 
-The demo app can be started on http://localhost:4000
+The demo app can be started on http://localhost:3000
 
 You as client and "the coffee shop" as back end, in a browser you can paste your private/secret key to OPEN a channel, sign ON and OFF chain txs are in the front end.
 Back end, check and sign transactions too with own private/secret key.
