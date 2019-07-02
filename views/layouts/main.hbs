@@ -323,14 +323,8 @@
                 // Deserialize binary transaction so we can inspect it
                 const txData = deserializeTx(tx);
 
-                console.log('txData');
-                console.log(txData.txType);
-                // console.log(txData);
-                console.log();
+                log(`[TAG]`, txData.txType);
 
-                // log(`[TAG] ${ tag }`);
-
-                // tag = txData.tag;
                 tag = txData.txType;
                 
                 if (txData.tag === 'CHANNEL_CREATE_TX' || tag === 'channelCreate') {
@@ -438,7 +432,7 @@
                         // Recipient account
                         recipientAddress,
                         // Amount
-                        999, // Number(amount), //parseInt(amount),
+                        Number(amount), //parseInt(amount),
                         // This function should verify offchain transaction
                         // and sign it with initiator's private key
                         async (tx) => await account.signTransaction(tx)
@@ -551,9 +545,6 @@
             }
 
             function deserializeTx(tx) {
-                // const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true });
-
-                // return txData;
 
                 return TxBuilder.unpackTx(tx);
             }

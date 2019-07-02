@@ -65,23 +65,12 @@ let account;
 (async function () {
 
     log(`'NETWORK_ID: ${ NETWORK_ID }`);
+    
+    account = await createAccount(keyPair);
 
     // const keypair = Crypto.generateKeyPair()
     // console.log(`Public key: ${keypair.publicKey}`)
     // console.log(`Secret key: ${keypair.secretKey}`)
-
-    account = await createAccount(keyPair);
-    
-    try {
-        // console.log(await account.address());
-        // // let aa = await account.spend(FUND_AMOUNT, 'ak_ktCQHTRZj4M9nf68zVGmrNnE4t9ZyTvCkJgfoXkbjRqSrauAB');
-        // let aa = await account.spend(1000, 'ak_ktCQHTRZj4M9nf68zVGmrNnE4t9ZyTvCkJgfoXkbjRqSrauAB');
-        // console.log(aa);
-
-    } catch (error) {
-        console.log('[ERROR]');
-        console.log(error);
-    }
 })()
 
 async function createChannel(req, res) {
@@ -250,8 +239,11 @@ async function connectAsResponder(params) {
     return await Channel(_params);
 }
 
-async function responderSign(tag, tx) {
+async function responderSign(tag, tx, additionalParam) {
     console.log('[SIGN] responder');
+
+    console.log('additionalParam');
+    console.log(additionalParam);
 
     if(tag === 'deposit_ack') {
 
@@ -294,7 +286,7 @@ async function responderSign(tag, tx) {
 
         // log(txData);
 
-        let isValid = isTxValid(txData);
+        let isValid = isTxValid(txData, additionalParam.updates);
         if (!isValid) {
             // TODO: challenge/dispute
             // log('[ERROR] transaction is not valid');
@@ -321,17 +313,22 @@ async function responderSign(tag, tx) {
     console.log('[ERROR] ==> THERE IS NO SUITABLE CASE TO SIGN', txData);
 }
 
-function isTxValid(txData) {
+function isTxValid(txData, updates) {
 
-    return true;
+    // return true;
 
-    let lastUpdateIndex = txData.updates.length - 1;
+    if(!updates) {
+        console.log('Missing ');
+        return false;
+    }
+
+    let lastUpdateIndex = updates.length - 1;
     if (lastUpdateIndex < 0) {
         console.log('[TX_VALIDATION] ==> last index is smaller than 0')
         return false;
     }
 
-    let lastUpdate = txData.updates[lastUpdateIndex];
+    let lastUpdate = updates[lastUpdateIndex];
     let data = openChannels.get(lastUpdate.from);
     if (!data) {
         console.log('[TX_VALIDATION] ==> no data <==')
@@ -339,7 +336,7 @@ function isTxValid(txData) {
     }
 
     let isRoundValid = data.round === txData.round;
-    let isPriceValid = data.product.price === txData.updates[lastUpdateIndex].amount;
+    let isPriceValid = data.product.price === updates[lastUpdateIndex].amount;
     let isValid = isRoundValid && isPriceValid;
 
     if(!isRoundValid) {
