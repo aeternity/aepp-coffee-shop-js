@@ -119,6 +119,9 @@ async function buyProduct(req, res) {
     let initiatorAddress = req.body.initiatorAddress;
     let productName = req.body.productName;
 
+    console.log(initiatorAddress);
+    // console.log(productName);
+
     let productPrice = products[productName];
     let data = openChannels.get(initiatorAddress);
 
@@ -258,14 +261,26 @@ async function responderSign(tag, tx) {
 
     // Deserialize binary transaction so we can inspect it
     let txData = deserializeTx(tx);
+    console.log('txData');
+    console.log(txData.txType);
+    // console.log();
+    // console.log(txData);
+    // console.log();
+
+    // let aa = JSON.parse(JSON.stringify(txData.rlpEncoded));
+    // console.log('aaa');
+    // console.log(txData.rlpEncoded.toString('utf8'));
+    // // // console.log(JSON.stringify(txData.rlpEncoded));
+    // console.log();
 
     // log(`[TAG] ${ tag }`);
 
-    tag = txData.tag;
+    // tag = txData.tag;
+    tag = txData.txType;
 
     // log(`[TAG] ${ tag }`);
 
-    if (tag === 'responder_sign' || tag === 'CHANNEL_CREATE_TX') {
+    if (tag === 'responder_sign' || tag === 'CHANNEL_CREATE_TX' || tag === 'channelCreate') {
         // log(txData);
         return account.signTransaction(tx)
     }
@@ -274,7 +289,7 @@ async function responderSign(tag, tx) {
 
     // When someone wants to transfer a tokens we will receive
     // a sign request with `update_ack` tag
-    if (tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX' || tag === 'CHANNEL_OFFCHAIN_UPDATE_TRANSFER') {
+    if (tag === 'channelOffChain' || tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX' || tag === 'CHANNEL_OFFCHAIN_UPDATE_TRANSFER') {
 
 
         // log(txData);
@@ -296,7 +311,7 @@ async function responderSign(tag, tx) {
         }
     }
 
-    if (tag === 'shutdown_sign_ack' || tag === 'CHANNEL_CLOSE_MUTUAL_TX') { // && txData.tag === 'CHANNEL_CLOSE_MUTUAL_TX'
+    if (tag === 'channelCloseMutual' || tag === 'shutdown_sign_ack' || tag === 'CHANNEL_CLOSE_MUTUAL_TX') { // && txData.tag === 'CHANNEL_CLOSE_MUTUAL_TX'
         // log('[txData]', '[WARNING] ...maybe this data is INCORRECT, shows some strange responder amount....', txData);
 
         return account.signTransaction(tx);
@@ -307,6 +322,9 @@ async function responderSign(tag, tx) {
 }
 
 function isTxValid(txData) {
+
+    return true;
+
     let lastUpdateIndex = txData.updates.length - 1;
     if (lastUpdateIndex < 0) {
         console.log('[TX_VALIDATION] ==> last index is smaller than 0')
@@ -341,8 +359,8 @@ function isTxValid(txData) {
 
 function sendConfirmMsg(txData) {
 
-    let from = txData.updates[txData.updates.length - 1].from;
-
+    let from = 'ak_mzgKu1D6MSxuwjxi98maG4e6e5XNKZxZEkKbLooRyxvedN85G';//  txData.updates[txData.updates.length - 1].from;
+    // espresso
     let data = openChannels.get(from);
     let msg = `[OFF_CHAIN] Successfully bought ${data.product.name} for ${data.product.price} aettos.`;
 
@@ -357,11 +375,13 @@ function sendConfirmMsg(txData) {
 }
 
 function deserializeTx(tx) {
-    const txData = Crypto.deserialize(Crypto.decodeTx(tx), {
-        prettyTags: true
-    });
+    // const txData = Crypto.deserialize(Crypto.decodeTx(tx), {
+    //     prettyTags: true
+    // });
 
-    return txData;
+    // return txData;
+
+    return TxBuilder.unpackTx(tx);
 }
 
 function getOffChainBalances(channel) {
