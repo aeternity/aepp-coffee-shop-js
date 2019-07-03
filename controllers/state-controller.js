@@ -2,7 +2,8 @@ const {
     Channel,
     Crypto,
     Universal,
-    TxBuilder
+    TxBuilder,
+    Chain
 } = require('@aeternity/aepp-sdk');
 
 const {
@@ -61,7 +62,7 @@ let account;
 
     // const keypair = Crypto.generateKeyPair()
     // console.log(`Public key: ${keypair.publicKey}`)
-    // console.log(`Secret key: ${keypair.secretKey}`)
+    // console.log(`Secret key: ${keypair.secretKey}`);
 
 })()
 

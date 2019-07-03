@@ -14,7 +14,17 @@
 // const RESPONDER_HOST = 'localhost';
 // const RESPONDER_PORT = 3333;
 
+// HTTPS
 // https://limenode.daepps.tech
+// const API_URL = 'https://limenode.daepps.tech';
+// const INTERNAL_API_URL = 'https://limenode.daepps.tech:3113';
+// const STATE_CHANNEL_URL = 'wss://limenode.daepps.tech/channel'
+// const NETWORK_ID = 'ae_uat';
+// const RESPONDER_HOST = 'localhost';
+// const RESPONDER_PORT = 3333;
+
+// HTTP
+// http://limenode.daepps.tech
 const API_URL = 'http://limenode.daepps.tech';
 const INTERNAL_API_URL = 'http://limenode.daepps.tech:3113';
 const STATE_CHANNEL_URL = 'ws://limenode.daepps.tech/channel'
