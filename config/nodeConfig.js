@@ -7,9 +7,17 @@
 // const RESPONDER_PORT = 3001;
 
 // http://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com
-const API_URL = 'http://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com';
-const INTERNAL_API_URL = 'http://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com:3113';
-const STATE_CHANNEL_URL = 'ws://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com/channel'
+// const API_URL = 'http://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com';
+// const INTERNAL_API_URL = 'http://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com:3113';
+// const STATE_CHANNEL_URL = 'ws://ae-coffee-shop-node-multi.eu-west-1.elasticbeanstalk.com/channel'
+// const NETWORK_ID = 'ae_uat';
+// const RESPONDER_HOST = 'localhost';
+// const RESPONDER_PORT = 3333;
+
+// https://limenode.daepps.tech
+const API_URL = 'http://limenode.daepps.tech';
+const INTERNAL_API_URL = 'http://limenode.daepps.tech:3113';
+const STATE_CHANNEL_URL = 'ws://limenode.daepps.tech/channel'
 const NETWORK_ID = 'ae_uat';
 const RESPONDER_HOST = 'localhost';
 const RESPONDER_PORT = 3333;

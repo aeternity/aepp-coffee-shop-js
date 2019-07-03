@@ -18,7 +18,7 @@ const keyPair = require('./../config/keyPair');
 const products = require('./../config/products');
 
 
-const SHOW_DEBUG_INFO = true;
+let SHOW_DEBUG_INFO = true;
 
 function log() {
     if (SHOW_DEBUG_INFO) {
@@ -30,7 +30,7 @@ function log() {
     }
 }
 
-const FUND_AMOUNT = amounts.deposit * 30;
+const FUND_AMOUNT = amounts.deposit * 6; // 1 AE * 6 = 6 AE
 
 let openChannels = new Map();
 
@@ -58,6 +58,10 @@ let account;
     log(`'NETWORK_ID: ${ NETWORK_ID }`);
     
     account = await createAccount(keyPair);
+
+    // const keypair = Crypto.generateKeyPair()
+    // console.log(`Public key: ${keypair.publicKey}`)
+    // console.log(`Secret key: ${keypair.secretKey}`)
 
 })()
 
@@ -100,6 +104,18 @@ async function buyProduct(req, res) {
     let data = openChannels.get(initiatorAddress);
 
     log(`[BUY] round: ${data.round}, module: ${data.round % 5}`, data);
+    log('[BUY][INFO] request body:', req.body);
+    log('[BUY][INFO] initiator address:', initiatorAddress);
+    log('[BUY][INFO] product name:', productName);
+    log('[BUY][INFO] product price:', productPrice);
+
+    if (!productName) {
+        productName = 'espresso';
+    }
+
+    if(!productPrice) {
+        productPrice = 500000000000000000;
+    }
 
     if (productPrice && data ) { // && data.isSigned
 
@@ -193,6 +209,19 @@ async function faucet(req, res) {
     }
 }
 
+// function showLogs (req, res) {
+//     console.log(req.body);
+//     SHOW_DEBUG_INFO = req.body.showLogs;
+
+//     res.send(`Show debug logs have been changed to: ${ SHOW_DEBUG_INFO }`);
+// }
+
+// function shouldShowLogs (req, res) {
+//     res.send({ show: SHOW_DEBUG_INFO})
+// }
+
+// helpers
+
 // connect as responder or initiator 
 async function connectAsResponder(params) {
 
@@ -240,7 +269,7 @@ async function responderSign(tag, tx, additionalParam) {
     log(`[TAG] ${ tag }`);
 
     if (tag === 'responder_sign' || tag === 'CHANNEL_CREATE_TX' || tag === 'channelCreate') {
-        log(txData);
+        //log(txData);
         return account.signTransaction(tx)
     }
 
@@ -249,7 +278,7 @@ async function responderSign(tag, tx, additionalParam) {
     if (tag === 'channelOffChain' || tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX' || tag === 'CHANNEL_OFFCHAIN_UPDATE_TRANSFER') {
 
 
-        log(txData);
+        //log(txData);
 
         let isValid = isTxValid(txData, additionalParam.updates);
         if (!isValid) {
@@ -314,17 +343,18 @@ function isTxValid(txData, updates) {
 function sendConfirmMsg(txData, updates) {
 
     let from = updates[updates.length - 1].from;
-    let data = openChannels.get(from);
-    let msg = `[OFF_CHAIN] Successfully bought ${data.product.name} for ${data.product.price} aettos.`;
-
-    let dataInfo = {
-        name: data.product.name,
-        amount: data.product.price,
-        message: msg,
-        isNextFree : (data.boughtProducts + 1) % 5 === 0
-    }
-
-    data.channel.sendMessage(JSON.stringify(dataInfo), from);
+        let data = openChannels.get(from);
+        // console.log('====>', data)
+        let msg = `[OFF_CHAIN] Successfully bought ${data.product.name} for ${data.product.price} aettos.`;
+    
+        let dataInfo = {
+            name: data.product.name,
+            amount: data.product.price,
+            message: msg,
+            isNextFree : (data.boughtProducts + 1) % 5 === 0
+        }
+    
+        data.channel.sendMessage(JSON.stringify(dataInfo), from);
 }
 
 function deserializeTx(tx) {
@@ -341,12 +371,14 @@ function getOffChainBalances(channel) {
 
 module.exports = {
     get: {
-        faucet
+        faucet,
+        // shouldShowLogs
     },
     post: {
         createChannel,
         buyProduct,
-        stopChannel
+        stopChannel,
+        // showLogs
     }
 }
 

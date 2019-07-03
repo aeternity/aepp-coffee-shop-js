@@ -1,12 +1,13 @@
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8">
-    <title>State Channel Demo</title> 
+    <title>State Channel Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous">
-    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous">
+        </script>
 
     <script src="/scripts/main.js"></script>
 
@@ -14,30 +15,33 @@
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/0.7.4/tailwind.min.css">
     <style>
-            .w-96{
-                width: 24rem;
-            }
-            .h-160{
-                height: 40rem;
-            }
-            .hide-me {
-                display: none;
-            }
+        .w-96 {
+            width: 24rem;
+        }
 
-            .btn {
-                border: 2px solid black;
-                border-radius: 3px;
-                margin: 10px;
-                padding: 5px;
-                color: red;
-            }
+        .h-160 {
+            height: 40rem;
+        }
+
+        .hide-me {
+            display: none;
+        }
+
+        .btn {
+            border: 2px solid black;
+            border-radius: 3px;
+            margin: 10px;
+            padding: 5px;
+            color: red;
+        }
     </style>
 </head>
-  <body  class="text-pink-darkest bg-teal-lightest relative font-sans">
+
+<body class="text-pink-darkest bg-teal-lightest relative font-sans">
 
     {{>home}}
     {{>loader}}
-    
+
     <div id="sc-wrapper">
         {{>open}}
         {{>buy}}
@@ -47,7 +51,7 @@
 
     <script>
 
-        const SHOW_DEBUG_INFO = true;
+        let SHOW_DEBUG_INFO = true;
 
         function log() {
             if (SHOW_DEBUG_INFO) {
@@ -58,7 +62,7 @@
                 console.log();
             }
         }
-        
+
         log(aeWeb);
 
         let initiatorKeyPair = {
@@ -69,7 +73,7 @@
         const ONE_AE = 1000000000000000000;
 
         const url = aeWeb.config.node.API_URL;
-        const internalUrl = aeWeb.config.node.INTERNAL_API_URL; 
+        const internalUrl = aeWeb.config.node.INTERNAL_API_URL;
         const networkId = aeWeb.config.node.NETWORK_ID;
 
         let responderId = aeWeb.config.responderAddress;
@@ -98,8 +102,10 @@
         let scWrapper;
         let channelStatus;
         let loadOpenFrame;
-        let isChannelOpen;
+        let isChannelOpen = () => false;
         let changeFrame;
+        let closeChannel;
+        let credit;
 
         let isNextCoffeeFreeOldState = false;
         let isCoffeeFree = false;
@@ -118,7 +124,7 @@
 
 
         class Helper {
-            constructor(){
+            constructor() {
                 this.updateOffChainBalanceFuncs = {};
                 this.onFrameChange = {};
             }
@@ -128,13 +134,13 @@
             }
 
             runUpdateOffChainBalance(frameName) {
-                if(this.updateOffChainBalanceFuncs[frameName.toLocaleLowerCase()]){
+                if (this.updateOffChainBalanceFuncs[frameName.toLocaleLowerCase()]) {
                     this.updateOffChainBalanceFuncs[frameName.toLocaleLowerCase()]();
                 }
             }
 
             setOnFrameChangeFuncs(frameName, func) {
-                if(!this.onFrameChange[frameName]){
+                if (!this.onFrameChange[frameName]) {
                     this.onFrameChange[frameName] = [];
                 }
 
@@ -142,10 +148,10 @@
             }
 
             runOnFrameChange(frameName) {
-                if(this.onFrameChange[frameName]){
-                    log(`[FRAME] ${ frameName }`);
+                if (this.onFrameChange[frameName]) {
+                    log(`[FRAME] ${frameName}`);
 
-                    for(let func in this.onFrameChange[frameName]){
+                    for (let func in this.onFrameChange[frameName]) {
                         this.onFrameChange[frameName][func]();
                     }
                 }
@@ -157,7 +163,7 @@
         changeFrame = function () {
             let action = $(this).attr('id').replace('btn-', '').toUpperCase();
 
-            log(`[BTN-ACTION] ${ action }`);
+            log(`[BTN-ACTION] ${action}`);
 
             scWrapper.hide();
             $(frames[action]).show();
@@ -165,34 +171,33 @@
             helper.runOnFrameChange(frames[action]);
         };
 
-        function showLoader(){
+        function showLoader() {
             scWrapper.hide();
             $(frames.LOADER).show();
         }
 
         (async function () {
 
-            account = await aeWeb.aepp();
+            account = await aeWeb.aepp(); console.log(account)
             initiatorAddress = await account.address();
 
-            log(`[INFO] initiator Address: ${initiatorAddress}`);
+            console.log(`[INFO] initiator Address: ${initiatorAddress}`);
 
             let result = await $.ajax({
-                    type: "GET",
-                    url: `/faucet?pubKey=${initiatorAddress}`
+                type: "GET",
+                url: `/faucet?pubKey=${initiatorAddress}`
             });
 
-            log(`[FAUCET] ${ result.message }`);
+            log(`[FAUCET] ${result.message}`);
 
             $('.change-frame').click(changeFrame);
-            
         })();
 
         (async function () {
 
             const history = [];
 
-            function clearHistory(){
+            function clearHistory() {
                 isNextCoffeeFreeOldState = false;
                 isCoffeeFree = false;
 
@@ -203,12 +208,12 @@
             scWrapper = $('.all-frames');
             window.scWrapper = scWrapper;
 
-            function loadOpenFrame () {
+            function loadOpenFrame() {
                 scWrapper.hide();
                 $(frames.OPEN).show();
             }
 
-            function loadBuyFrame () {
+            function loadBuyFrame() {
                 scWrapper.hide();
                 $(frames.BUY).show();
                 helper.runUpdateOffChainBalance(frames.BUY);
@@ -218,12 +223,12 @@
                 scWrapper.hide();
                 $(frames.CREDITS).show();
                 helper.runUpdateOffChainBalance(frames.CREDITS);
-            } 
+            }
 
             loadOpenFrame();
-            
+
             isChannelOpen = function () {
-                if(channelStatus !== 'open') {
+                if (channelStatus !== 'open') {
                     loadOpenFrame();
 
                     clearHistory();
@@ -242,7 +247,7 @@
 
                 let depositValue = parseInt($(this).data('amount-value'));
                 depositAmount = depositValue * ONE_AE;
-                
+
                 showLoader();
 
                 if (!depositAmount || depositAmount < 1) {
@@ -256,7 +261,7 @@
 
                 if (depositAmount < params.responderAmount) {
                     alert(`Deposit should be equal or greater than ${params.responderAmount}!`);
-                    $('.start-wrapper').show();    
+                    $('.start-wrapper').show();
                     hideLoader();
                     return;
                 }
@@ -269,7 +274,7 @@
 
                 try {
                     channel = await connectAsInitiator(params, sign);
-                } catch(e) {
+                } catch (e) {
                     console.log('[ERROR]', e);
                     return;
                 }
@@ -287,7 +292,7 @@
                     url: '/channel',
                     data: data,
                     success: function (response) {
-                        log(`[RESULT] channel creation response: ${ response }`);
+                        log(`[RESULT] channel creation response: ${response}`);
                     }
                 });
             }
@@ -302,7 +307,7 @@
                     role: 'initiator',
                     sign: sign,
                     minimum_depth: 0,
-                    
+
                     //timeout_accept : TIMEOUT,
                     //timeout_funding_lock : TIMEOUT,
                     //timeout_awaiting_locked : TIMEOUT,
@@ -310,7 +315,7 @@
                     //timeout_idle: TIMEOUT,
                     //timeout_funding_create: TIMEOUT,
                     //timeout_sign: TIMEOUT,
-                    
+
                     //timeout_awaiting_open: TIMEOUT,
                     //timeout_idle: TIMEOUT,
                 }
@@ -327,23 +332,23 @@
                 log(`[TAG]`, txData.txType);
 
                 tag = txData.txType;
-                
+
                 if (txData.tag === 'CHANNEL_CREATE_TX' || tag === 'channelCreate') {
-                log(`[SIGN] CHANNEL_CREATE_TX:`, txData);
-                    
+                    log(`[SIGN] CHANNEL_CREATE_TX:`, txData);
+
                     return account.signTransaction(tx);
                 }
 
                 if (tag === 'channelOffChain' || tag === 'update_ack' || tag === 'CHANNEL_OFFCHAIN_TX') {
-                    
-                    log(`[SIGN] CHANNEL_OFFCHAIN_TX: ${ txData }`);
-                    
+
+                    log(`[SIGN] CHANNEL_OFFCHAIN_TX: ${txData}`);
+
                     return account.signTransaction(tx);
                 }
 
                 if (tag === 'channelCloseMutual' || tag === 'shutdown_sign_ack' || txData.tag === 'CHANNEL_CLOSE_MUTUAL_TX') {
-                    log(`[SIGN] CHANNEL_CLOSE_MUTUAL_TX: ${ txData }`);
-                    
+                    log(`[SIGN] CHANNEL_CLOSE_MUTUAL_TX: ${txData}`);
+
                     return account.signTransaction(tx);
                 }
 
@@ -356,13 +361,13 @@
                     channelStatus = status;
                     log(`[STATUS] ${status.toUpperCase()}`);
 
-                    if(status.toUpperCase() === 'DISCONNECTED') {
+                    if (status.toUpperCase() === 'DISCONNECTED') {
                         loadOpenFrame();
                     }
                 });
 
                 channel.on('onChainTx', (tx) => {
-                    log(`[ON-CHAIN-TX]: ${ tx }`);
+                    log(`[ON-CHAIN-TX]: ${tx}`);
                 })
 
                 channel.on('message', async (msg) => {
@@ -375,19 +380,19 @@
                         loadBuyFrame();
 
                         //showSeconds(180);
-                        function showSeconds (maxSeconds) {
+                        function showSeconds(maxSeconds) {
                             let currentSecond = 1;
                             let interval = setInterval(function () {
                                 console.log(currentSecond++);
-                                if(currentSecond >= maxSeconds) {
+                                if (currentSecond >= maxSeconds) {
                                     clearInterval(interval);
                                 }
                             }, 1000);
                         }
-                        
+
                     }
 
-                    if(msg.info.indexOf('[OFF_CHAIN]') >= 0) {
+                    if (msg.info.indexOf('[OFF_CHAIN]') >= 0) {
 
                         let historyData = {
                             quantity: 1,
@@ -399,7 +404,7 @@
                         let oldState = isNextCoffeeFreeOldState;
                         isCoffeeFree = info.isNextFree;
 
-                        if (isNextCoffeeFree || oldState){
+                        if (isNextCoffeeFree || oldState) {
                             // maybe more correct would be onEvent || or throw events and event listener to execute proper function
                             helper.runOnFrameChange(frames.BUY);
                         }
@@ -413,11 +418,11 @@
                 let balance = await getOffChainBalance();
                 updateOffChainBalance(balance);
             }
-            
+
             getOffChainBalance = async function () {
                 // off chain balances
-                let balances = await channel.balances([ initiatorAddress ]);
-                let offChainBalance = balances[ initiatorAddress ];
+                let balances = await channel.balances([initiatorAddress]);
+                let offChainBalance = balances[initiatorAddress];
 
                 return offChainBalance;
             }
@@ -446,25 +451,25 @@
 
             reDeposit = async function (amount) {
 
-                log(`[DEBUG] try to redeposit with: ${ amount }`);
-                
+                log(`[DEBUG] try to redeposit with: ${amount}`);
+
                 showLoader();
-                
+
                 let result;
                 try {
                     result = await channel.deposit(
-                        Number(amount), 
+                        Number(amount),
                         async (tx) => await account.signTransaction(tx),
                         { onOnChainTx: (tx) => console.log('[NEW] on_chain_tx', tx) });
 
                     loadCreditFrame()
 
-                    if(result.accepted){
+                    if (result.accepted) {
                         let historyData = {
                             quantity: 1,
                             name: 'CREDIT',
                             amount: amount,
-                            date:Date.now()
+                            date: Date.now()
                         };
 
                         history.push(historyData);
@@ -479,19 +484,19 @@
             /* Shutdown state channel*/
             closeChannel = async function () {
 
-                if(!isChannelOpen()) {
+                if (!isChannelOpen()) {
                     console.log('[ERROR] State Channel is DISCONNECTED!');
                     return;
                 }
 
                 try {
-                    
+
                     let shutDownResult = await channel.shutdown(async (tx) => {
                         clearHistory();
                         return account.signTransaction(tx);
                     });
 
-                    log(`[RESULT] shutdown: ${ shutDownResult }`);
+                    log(`[RESULT] shutdown: ${shutDownResult}`);
                 } catch (e) {
                     console.log('[ERROR] Error occurred while closing the channel.')
                     console.log(e);
@@ -506,7 +511,7 @@
                     url: '/stop',
                     data: data,
                     success: function (response) {
-                        log(`[INFO] state channel successfully closed: ${ response }`)
+                        log(`[INFO] state channel successfully closed: ${response}`)
                     },
                     error: function (response) {
                         console.log('[ERROR] stop:', response)
@@ -516,12 +521,12 @@
 
             credit = async function () {
 
-                if(!isChannelOpen()){
+                if (!isChannelOpen()) {
                     return;
                 }
 
                 let amountToRedeposit = $(this).data('credit');
-                
+
                 if (isNaN(amountToRedeposit) || amountToRedeposit <= 0) {
                     alert("Redeposit should be a number and greater than 0(zero).");
                     return;
@@ -541,7 +546,7 @@
                     type: "GET",
                     url: '/config/params'
                 });
-                
+
                 return result;
             }
 
@@ -554,4 +559,5 @@
     </script>
 
 </body>
+
 </html>

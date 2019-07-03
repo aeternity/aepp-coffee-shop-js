@@ -1,4 +1,4 @@
 module.exports = {
-    publicKey: 'ak_xoQeiLKBCq3fNzxA1YyGbHvaUzeNwV2p7AGRvPVEmWWBKL7d7',
-    secretKey: '99d065438f81149ae29613433aa7f4039572d4dac6dc20e830f1f80315c5fdb97eb376b4e95442d2324750a36ab95dd15b9177c983ba8fe3326da1ecc0fee3db'
+    publicKey: 'ak_27c4YpfUuW4s9T6RBNpASNuDRiXSWQ93uZ5WxaUXfx1Lqibv33',
+    secretKey: '357985aa340a6dc64ad7fff331d478c9d2cee98f3cd5fbe1dd6b3c239647271392b142f128defdf72b6cee83ec09e352ee3f4dcb0fe51f3c862b48f7bb85d11b'
 }
