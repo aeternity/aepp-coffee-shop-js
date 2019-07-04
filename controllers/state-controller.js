@@ -59,11 +59,6 @@ let account;
     log(`'NETWORK_ID: ${ NETWORK_ID }`);
     
     account = await createAccount(keyPair);
-
-    // const keypair = Crypto.generateKeyPair()
-    // console.log(`Public key: ${keypair.publicKey}`)
-    // console.log(`Secret key: ${keypair.secretKey}`);
-
 })()
 
 async function createChannel(req, res) {
@@ -221,7 +216,7 @@ async function faucet(req, res) {
 //     res.send({ show: SHOW_DEBUG_INFO})
 // }
 
-// helpers
+// HELPERS
 
 // connect as responder or initiator 
 async function connectAsResponder(params) {
@@ -235,7 +230,6 @@ async function connectAsResponder(params) {
         sign: responderSign,
         minimum_depth: 0,
 
-        // can I add this additional params ???
         // timeout_accept : TIMEOUT,
         // timeout_funding_lock : TIMEOUT,
         // timeout_awaiting_locked : TIMEOUT,

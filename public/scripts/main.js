@@ -19729,7 +19729,7 @@ const Impl = __webpack_require__(463);
 // const RESPONDER_HOST = 'localhost';
 // const RESPONDER_PORT = 3333;
 
-// HTTPS
+// HTTPS - 
 // https://limenode.daepps.tech
 // const API_URL = 'https://limenode.daepps.tech';
 // const INTERNAL_API_URL = 'https://limenode.daepps.tech:3113';
@@ -19740,9 +19740,18 @@ const Impl = __webpack_require__(463);
 
 // HTTP
 // http://limenode.daepps.tech
-const API_URL = 'http://limenode.daepps.tech';
-const INTERNAL_API_URL = 'http://limenode.daepps.tech:3113';
-const STATE_CHANNEL_URL = 'ws://limenode.daepps.tech/channel'
+// const API_URL = 'http://limenode.daepps.tech';
+// const INTERNAL_API_URL = 'http://limenode.daepps.tech:3113';
+// const STATE_CHANNEL_URL = 'ws://limenode.daepps.tech/channel'
+// const NETWORK_ID = 'ae_uat';
+// const RESPONDER_HOST = 'localhost';
+// const RESPONDER_PORT = 3333;
+
+// HTTPS - 
+// https://limeaenode.daepps.tech /v2/status 
+const API_URL = 'https://limeaenode.daepps.tech';
+const INTERNAL_API_URL = 'https://limeaenode.daepps.tech:3113';
+const STATE_CHANNEL_URL = 'wss://limeaenode.daepps.tech/channel'
 const NETWORK_ID = 'ae_uat';
 const RESPONDER_HOST = 'localhost';
 const RESPONDER_PORT = 3333;
@@ -19768,10 +19777,10 @@ module.exports = {
 /* 184 */
 /***/ (function(module, exports) {
 
-module.exports = {
-    publicKey: 'ak_27c4YpfUuW4s9T6RBNpASNuDRiXSWQ93uZ5WxaUXfx1Lqibv33',
-    secretKey: '357985aa340a6dc64ad7fff331d478c9d2cee98f3cd5fbe1dd6b3c239647271392b142f128defdf72b6cee83ec09e352ee3f4dcb0fe51f3c862b48f7bb85d11b'
-}
+// module.exports = {
+//     publicKey: 'ak_27c4YpfUuW4s9T6RBNpASNuDRiXSWQ93uZ5WxaUXfx1Lqibv33',
+//     secretKey: '357985aa340a6dc64ad7fff331d478c9d2cee98f3cd5fbe1dd6b3c239647271392b142f128defdf72b6cee83ec09e352ee3f4dcb0fe51f3c862b48f7bb85d11b'
+// }
 
 // test account 
 // module.exports = {
@@ -19785,6 +19794,12 @@ module.exports = {
 //     publicKey: 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU',
 //     secretKey: 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca'
 // }
+
+
+module.exports = {
+    publicKey: 'ak_2F8Vo1DCTjWAgC5x5SxfgzcWhZWkLvAXANQa4uTvY9R8qdeTXK',
+    secretKey: '75cbc9a20dd8fcf178d4a87d9587bb0f5e6762454b55ea2ec594a9a8ace50f0aa3c73d937e90df3a915a98151f69890a8f90598d26548b1d1d0ff9d01acbeae6'
+}
 
 /***/ }),
 /* 185 */
