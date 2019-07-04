@@ -2,7 +2,7 @@
 
 https://coffee-shop.daepps.tech
 
-То run this demo you should set your key pair as environment variables(publicKey && secretKey) and it would connect to the test net.
+То run this demo you should set your key pair as environment variables(publicKey && secretKey) and it would connect you to the test net.
 
 clone this repo
 ```git clone https://github.com/aeternity/aepp-coffee-shop-js.git```
