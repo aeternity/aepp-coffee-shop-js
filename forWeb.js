@@ -5,7 +5,8 @@ const {
     Universal,
     Wallet,
     TxBuilder,
-    Aepp
+    Aepp,
+    Node
 } = require('@aeternity/aepp-sdk');
 
 //const Aepp = require('@aeternity/aepp-sdk/es/ae/aepp').default;
@@ -31,6 +32,7 @@ const aeWeb = {
     memoryAccount: MemoryAccount,
     txBuilder: TxBuilder,
     aepp: Aepp,
+    node: Node,
     config: {
         responderAddress: publicKey,
         node: {

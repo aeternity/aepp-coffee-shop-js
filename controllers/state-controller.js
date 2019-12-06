@@ -3,28 +3,33 @@ const {
     Crypto,
     Universal,
     TxBuilder,
-    Chain
+    Chain,
+    MemoryAccount,
+    Node
 } = require('@aeternity/aepp-sdk');
 
 const {
     API_URL,
     INTERNAL_API_URL,
     STATE_CHANNEL_URL,
-    NETWORK_ID
+    NETWORK_ID,
+    COMPILER_URL
 } = require('./../config/nodeConfig');
 
 const amounts = require('./../config/stateChannelConfig').amounts;
 
 const keyPair = require('./../config/keyPair');
 const products = require('./../config/products');
-
+const ChannelMessage = require('./../utils/index').ChannelMessage;
 
 let SHOW_DEBUG_INFO = true;
+
+const messageQueue = [];
 
 function log() {
     if (SHOW_DEBUG_INFO) {
         for (let arg in arguments) {
-            console.log(`${new Date()}|${JSON.stringify(arguments[arg], null, 2)}`);
+            console.log(`${new Date()} | ${JSON.stringify(arguments[arg], null, 2)}`);
         }
 
         console.log();
@@ -35,24 +40,32 @@ const FUND_AMOUNT = amounts.deposit * 6; // 1 AE * 6 = 6 AE
 
 let openChannels = new Map();
 
-let createAccount = async function (keyPair) {
+async function createAccount (keyPair) {
 
-    let tempAccount = await Universal({
+    let node = await Node({
         url: API_URL,
         internalUrl: INTERNAL_API_URL,
-        networkId: NETWORK_ID,
-        keypair: {
-            publicKey: keyPair.publicKey,
-            secretKey: keyPair.secretKey
-        }
+        forceCompatibility: true
     })
 
-    return tempAccount;
+    let client = await Universal({
+        nodes: [{
+            name: 'ANY_NAME',
+            instance: node
+        }],
+        accounts: [MemoryAccount({
+            keypair: keyPair
+        })],
+        nativeMode: true,
+        networkId: NETWORK_ID,
+        compilerUrl: COMPILER_URL,
+        forceCompatibility: true
+    })
+
+    return client;
 }
 
 let account;
-
-
 
 (async function () {
 
@@ -86,7 +99,10 @@ async function createChannel(req, res) {
         message: 'State channel is successfully created!'
     }
 
-    channel.sendMessage(JSON.stringify(info), params.initiatorId);
+    let message = new ChannelMessage(params.initiatorId, info);
+    messageQueue.push(message);
+
+    channelActions(channel);
 
     res.send('ok');
 }
@@ -294,6 +310,21 @@ async function responderSign(tag, tx, additionalParam) {
     }
 
     console.log('[ERROR] ==> THERE IS NO SUITABLE CASE TO SIGN', txData);
+}
+
+function channelActions(channel) {
+
+    channel.on('statusChanged', (status) => {
+
+        log(`[STATUS] ${status.toUpperCase()}`);
+
+        if (status.toUpperCase() === 'OPEN') {
+            while(messageQueue.length > 0){
+                let msg = messageQueue.shift();
+                channel.sendMessage(msg.message, msg.recipient);
+            }
+        }
+    });
 }
 
 function isTxValid(txData, updates) {
