@@ -1,6 +1,8 @@
 
 // HTTPS
 // https://limeaenode.daepps.tech/v2/status
+
+const COMPILER_URL = 'http://localhost:3080';
 const API_URL = 'https://limeaenode.daepps.tech';
 const INTERNAL_API_URL = 'https://limeaenode.daepps.tech:3113';
 const STATE_CHANNEL_URL = 'wss://limeaenode.daepps.tech/channel'
@@ -14,5 +16,6 @@ module.exports = {
     STATE_CHANNEL_URL,
     NETWORK_ID,
     RESPONDER_HOST,
-    RESPONDER_PORT
+    RESPONDER_PORT,
+    COMPILER_URL
 }
