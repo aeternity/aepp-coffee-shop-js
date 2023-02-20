@@ -1,3 +1,6 @@
+## This repository has been archived on 20.02.2023
+The reason for the retirement is that the code is outdated. For a up to date state channel demo please refer to https://github.com/aeternity/state-channel-demo
+
 # COFFEE SHOP STATE CHANNEL DEMO
 
 https://coffee-shop.daepps.tech
